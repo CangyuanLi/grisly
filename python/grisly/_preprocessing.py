@@ -16,10 +16,10 @@ def coerce_ascii(expr: pl.Expr) -> pl.Expr:
     return expr.str.replace_all("[^\p{Ascii}]", "")
 
 
-def ordered_unique(expr: pl.Expr) -> pl.Expr:
+def unique_words(expr: pl.Expr) -> pl.Expr:
     return expr._register_plugin(
         lib=LIB,
-        symbol="ordered_unique",
+        symbol="unique_words",
         is_elementwise=True,
     )
 

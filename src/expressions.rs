@@ -1,7 +1,7 @@
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
 
-fn _ordered_unique(value: &str, output: &mut String) {
+fn _unique_words(value: &str, output: &mut String) {
     let mut seen = std::collections::HashSet::new();
     let mut items: Vec<&str> = value.split(' ').collect();
     items.retain(|item| seen.insert(*item));
@@ -10,9 +10,9 @@ fn _ordered_unique(value: &str, output: &mut String) {
 }
 
 #[polars_expr(output_type=Utf8)]
-fn ordered_unique(inputs: &[Series]) -> PolarsResult<Series> {
+fn unique_words(inputs: &[Series]) -> PolarsResult<Series> {
     let ca = inputs[0].utf8()?;
-    let out = ca.apply_to_buffer(_ordered_unique);
+    let out = ca.apply_to_buffer(_unique_words);
 
     Ok(out.into_series())
 }
