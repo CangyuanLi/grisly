@@ -13,16 +13,10 @@ def replace_with_null(expr: pl.Expr, to_replace: Union[str, Iterable[str]]) -> p
     if isinstance(to_replace, str):
         to_replace = [to_replace]
 
-    return (
-        pl.when(
-            pl.any_horizontal(
-                expr.str.count_matches(pattern) > 0 for pattern in to_replace
-            )
-        )
-        .then(None)
-        .otherwise(expr)
-        .keep_name()
-    )
+    for pattern in to_replace:
+        expr = pl.when(expr.str.count_matches(pattern) > 0).then(None).otherwise(expr)
+
+    return expr.keep_name()
 
 
 def normalize_whitespace(expr: pl.Expr) -> pl.Expr:
