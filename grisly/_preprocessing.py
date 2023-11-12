@@ -1,7 +1,28 @@
+from __future__ import annotations
+
+from collections.abc import Iterable
+from typing import Union
+
 import polars as pl
 from polars.utils.udfs import _get_shared_lib_location
 
 LIB = _get_shared_lib_location(__file__)
+
+
+def replace_with_null(expr: pl.Expr, to_replace: Union[str, Iterable[str]]) -> pl.Expr:
+    if isinstance(to_replace, str):
+        to_replace = [to_replace]
+
+    return (
+        pl.when(
+            pl.any_horizontal(
+                expr.str.count_matches(pattern) > 0 for pattern in to_replace
+            )
+        )
+        .then(None)
+        .otherwise(expr)
+        .keep_name()
+    )
 
 
 def normalize_whitespace(expr: pl.Expr) -> pl.Expr:
@@ -29,6 +50,10 @@ def remove_chars(expr: pl.Expr, unwanted: list[str]) -> pl.Expr:
         expr = expr.str.replace_all(char, "", literal=True)
 
     return expr
+
+
+def keep_only(expr: pl.Expr, to_keep: str) -> pl.Expr:
+    return expr.str.replace_all(f"[^{to_keep}]", "")
 
 
 def remove_generational_suffixes(expr: pl.Expr) -> pl.Expr:
