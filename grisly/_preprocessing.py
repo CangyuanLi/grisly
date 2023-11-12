@@ -39,7 +39,7 @@ def unique_words(expr: pl.Expr) -> pl.Expr:
     )
 
 
-def remove_chars(expr: pl.Expr, unwanted: list[str]) -> pl.Expr:
+def remove_chars(expr: pl.Expr, unwanted: Iterable[str]) -> pl.Expr:
     for char in unwanted:
         expr = expr.str.replace_all(char, "", literal=True)
 
