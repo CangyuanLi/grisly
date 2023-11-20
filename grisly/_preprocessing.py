@@ -6,7 +6,28 @@ from typing import Union
 import polars as pl
 from polars.utils.udfs import _get_shared_lib_location
 
+PolarsFrame = Union[pl.DataFrame, pl.LazyFrame]
+
 LIB = _get_shared_lib_location(__file__)
+
+
+def waterfall_join(
+    left: PolarsFrame, right: PolarsFrame, left_on: Iterable[str], right_on=str
+) -> PolarsFrame:
+    left = left.with_row_count("index")
+    seen = []
+    outputs: list[PolarsFrame] = []
+    for col in left_on:
+        output = left.filter(~pl.col("index").is_in(seen)).join(
+            right, left_on=col, right_on=right_on, how="inner"
+        )
+
+        seen.extend(
+            output.select("index").lazy().collect().get_column("index").to_list()
+        )
+        outputs.append(output)
+
+    return pl.concat(outputs).sort("index").drop("index")
 
 
 def replace_with_null(expr: pl.Expr, to_replace: Union[str, Iterable[str]]) -> pl.Expr:
@@ -35,6 +56,16 @@ def unique_words(expr: pl.Expr) -> pl.Expr:
     return expr._register_plugin(
         lib=LIB,
         symbol="unique_words",
+        is_elementwise=True,
+    )
+
+
+def map_words(expr: pl.Expr, mapper: dict[str, str]) -> pl.Expr:
+    return expr._register_plugin(
+        lib=LIB,
+        args=[],
+        kwargs={"mapper": mapper},
+        symbol="map_words",
         is_elementwise=True,
     )
 
