@@ -15,7 +15,7 @@ def waterfall_join(
     left: PolarsFrame, right: PolarsFrame, left_on: Iterable[str], right_on=str
 ) -> PolarsFrame:
     left = left.with_row_count("index")
-    seen = []
+    seen: list[int] = []
     outputs: list[PolarsFrame] = []
     for col in left_on:
         output = left.filter(~pl.col("index").is_in(seen)).join(
@@ -41,7 +41,7 @@ def replace_with_null(expr: pl.Expr, to_replace: Union[str, Iterable[str]]) -> p
 
 
 def normalize_whitespace(expr: pl.Expr) -> pl.Expr:
-    return expr.str.replace_all(" +", " ", literal=False)
+    return expr.str.replace_all(" +", " ")
 
 
 def remove_whitespace(expr: pl.Expr) -> pl.Expr:
