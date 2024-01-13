@@ -11,6 +11,28 @@ PolarsFrame = Union[pl.DataFrame, pl.LazyFrame]
 LIB = _get_shared_lib_location(__file__)
 
 
+def move_column(df: pl.DataFrame, idx: int, col: str) -> pl.DataFrame:
+    """Move column to specified index.
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        _description_
+    idx : int
+        _description_
+    col : str
+        _description_
+
+    Returns
+    -------
+    pl.DataFrame
+        _description_
+    """
+    s = df[col]
+    df = df.drop(col)
+    df.insert_column(idx, s)
+
+
 def waterfall_join(
     left: PolarsFrame, right: PolarsFrame, left_on: Iterable[str], right_on=str
 ) -> PolarsFrame:
@@ -30,12 +52,20 @@ def waterfall_join(
     return pl.concat(outputs).sort("index").drop("index")
 
 
-def replace_with_null(expr: pl.Expr, to_replace: Union[str, Iterable[str]]) -> pl.Expr:
+def replace_with_null(
+    expr: pl.Expr, to_replace: Union[str, Iterable[str]], literal: bool = True
+) -> pl.Expr:
     if isinstance(to_replace, str):
         to_replace = [to_replace]
 
-    for pattern in to_replace:
-        expr = pl.when(expr.str.count_matches(pattern) > 0).then(None).otherwise(expr)
+    if literal:
+        for x in to_replace:
+            expr = pl.when(expr == pl.lit(x)).then(None).otherwise(expr)
+    else:
+        for pattern in to_replace:
+            expr = (
+                pl.when(expr.str.count_matches(pattern) > 0).then(None).otherwise(expr)
+            )
 
     return expr.keep_name()
 
