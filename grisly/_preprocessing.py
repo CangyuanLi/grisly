@@ -54,16 +54,16 @@ def waterfall_join(
 
 
 def replace_with_null(
-    expr: pl.Expr, to_replace: Union[str, Iterable[str]], literal: bool = True
+    expr: pl.Expr, value: Union[str, Iterable[str]], literal: bool = True
 ) -> pl.Expr:
-    if isinstance(to_replace, str):
-        to_replace = [to_replace]
+    if isinstance(value, str):
+        value = [value]
 
     if literal:
-        for x in to_replace:
+        for x in value:
             expr = pl.when(expr == pl.lit(x)).then(None).otherwise(expr)
     else:
-        for pattern in to_replace:
+        for pattern in value:
             expr = (
                 pl.when(expr.str.count_matches(pattern) > 0).then(None).otherwise(expr)
             )
@@ -73,6 +73,10 @@ def replace_with_null(
 
 def normalize_whitespace(expr: pl.Expr) -> pl.Expr:
     return expr.str.replace_all(" +", " ")
+
+
+def replace_whitespace(expr: pl.Expr, value: str) -> pl.Expr:
+    return expr.str.replace_all(r"\s", value)
 
 
 def remove_whitespace(expr: pl.Expr) -> pl.Expr:
