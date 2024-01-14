@@ -135,8 +135,8 @@ def keep_only(expr: pl.Expr, to_keep: str) -> pl.Expr:
 
 def remove_generational_suffixes(expr: pl.Expr) -> pl.Expr:
     return (
-        expr.str.replace_all(r"\s?J\.*?R\.*\s*?$", "")
-        .str.replace_all(r"\s?S\.*?R\.*\s*?$", "")
-        .str.replace_all(r"\s?III\s*?$", "")
-        .str.replace_all(r"\s?IV\s*?$", "")
+        expr.str.replace_all(r"(?i)\s?J\.*?R\.*\s*?$", "")
+        .str.replace_all(r"(?i)\s?S\.*?R\.*\s*?$", "")
+        .str.replace_all(r"(?i)\s?III\s*?$", "")
+        .str.replace_all(r"(?i)\s?IV\s*?$", "")
     )
