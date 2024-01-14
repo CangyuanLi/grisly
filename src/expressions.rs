@@ -19,17 +19,17 @@ fn unique_words(inputs: &[Series]) -> PolarsResult<Series> {
 
 #[derive(serde::Deserialize)]
 struct MapWordsKwargs {
-    mapper: std::collections::HashMap<String, String>,
+    mapping: std::collections::HashMap<String, String>,
 }
 
 fn _map_words(
     value: &str,
-    mapper: &std::collections::HashMap<String, String>,
+    mapping: &std::collections::HashMap<String, String>,
     output: &mut String,
 ) {
     let vec: Vec<&str> = value
         .split_whitespace()
-        .map(|word| match mapper.get(word) {
+        .map(|word| match mapping.get(word) {
             Some(val) => val,
             None => word,
         })
@@ -41,7 +41,7 @@ fn _map_words(
 #[polars_expr(output_type=Utf8)]
 fn map_words(inputs: &[Series], kwargs: MapWordsKwargs) -> PolarsResult<Series> {
     let ca = inputs[0].utf8()?;
-    let out = ca.apply_to_buffer(|val, buf| _map_words(val, &kwargs.mapper, buf));
+    let out = ca.apply_to_buffer(|val, buf| _map_words(val, &kwargs.mapping, buf));
 
     Ok(out.into_series())
 }

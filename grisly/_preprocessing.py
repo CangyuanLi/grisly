@@ -108,11 +108,11 @@ def unique_words(expr: pl.Expr) -> pl.Expr:
     )
 
 
-def map_words(expr: pl.Expr, mapper: dict[str, str]) -> pl.Expr:
+def map_words(expr: pl.Expr, mapping: dict[str, str]) -> pl.Expr:
     return expr._register_plugin(
         lib=LIB,
         args=[],
-        kwargs={"mapper": mapper},
+        kwargs={"mapping": mapping},
         symbol="map_words",
         is_elementwise=True,
     )
