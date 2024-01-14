@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Union
+from typing import Literal, Union
 
 import polars as pl
 from polars.utils.udfs import _get_shared_lib_location
@@ -139,4 +139,20 @@ def remove_generational_suffixes(expr: pl.Expr) -> pl.Expr:
         .str.replace_all(r"(?i)\s?S\.*?R\.*\s*?$", "")
         .str.replace_all(r"(?i)\s?III\s*?$", "")
         .str.replace_all(r"(?i)\s?IV\s*?$", "")
+    )
+
+
+def normalize(expr: pl.Expr, form: Literal["NFC", "NKFC", "NFD", "NKFD"]) -> pl.Expr:
+    return expr._register_plugin(
+        lib=LIB,
+        args=[],
+        kwargs={"form": form},
+        symbol="normalize",
+        is_elementwise=True,
+    )
+
+
+def remove_diacritics(expr: pl.Expr) -> pl.Expr:
+    return expr._register_plugin(
+        lib=LIB, symbol="remove_diacritics", is_elementwise=True
     )

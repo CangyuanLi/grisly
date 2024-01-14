@@ -12,3 +12,4 @@ polars = { version = "*" }
 pyo3 = { version = "*", features = ["extension-module"] }
 pyo3-polars = { version = "*", features = ["derive"] }
 serde = { version = "*", features = ["derive"] }
+unicode-normalization = "0.1.22"

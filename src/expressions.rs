@@ -1,5 +1,6 @@
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
+use unicode_normalization::UnicodeNormalization;
 
 fn _unique_words(value: &str, output: &mut String) {
     let mut seen = std::collections::HashSet::new();
@@ -42,6 +43,43 @@ fn _map_words(
 fn map_words(inputs: &[Series], kwargs: MapWordsKwargs) -> PolarsResult<Series> {
     let ca = inputs[0].utf8()?;
     let out = ca.apply_to_buffer(|val, buf| _map_words(val, &kwargs.mapping, buf));
+
+    Ok(out.into_series())
+}
+
+#[derive(serde::Deserialize)]
+struct NormalizeKwargs {
+    form: String,
+}
+
+fn _normalize(value: &str, form: &str, output: &mut String) {
+    if form == "NFC" {
+        *output = value.nfc().collect()
+    } else if form == "NKFC" {
+        *output = value.nfkc().collect()
+    } else if form == "NFD" {
+        *output = value.nfd().collect()
+    } else if form == "NFKD" {
+        *output = value.nfkd().collect()
+    }
+}
+
+#[polars_expr(output_type=Utf8)]
+fn normalize(inputs: &[Series], kwargs: NormalizeKwargs) -> PolarsResult<Series> {
+    let ca = inputs[0].utf8()?;
+    let out = ca.apply_to_buffer(|val, buf| _normalize(val, &kwargs.form, buf));
+
+    Ok(out.into_series())
+}
+
+fn _remove_diacritics(value: &str, output: &mut String) {
+    *output = value.nfd().filter(char::is_ascii).collect()
+}
+
+#[polars_expr(output_type=Utf8)]
+fn remove_diacritics(inputs: &[Series]) -> PolarsResult<Series> {
+    let ca = inputs[0].utf8()?;
+    let out = ca.apply_to_buffer(_remove_diacritics);
 
     Ok(out.into_series())
 }
