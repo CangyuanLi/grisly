@@ -111,7 +111,6 @@ def unique_words(expr: pl.Expr) -> pl.Expr:
 def map_words(expr: pl.Expr, mapping: dict[str, str]) -> pl.Expr:
     return expr._register_plugin(
         lib=LIB,
-        args=[],
         kwargs={"mapping": mapping},
         symbol="map_words",
         is_elementwise=True,
@@ -145,7 +144,6 @@ def remove_generational_suffixes(expr: pl.Expr) -> pl.Expr:
 def normalize(expr: pl.Expr, form: Literal["NFC", "NKFC", "NFD", "NKFD"]) -> pl.Expr:
     return expr._register_plugin(
         lib=LIB,
-        args=[],
         kwargs={"form": form},
         symbol="normalize",
         is_elementwise=True,
