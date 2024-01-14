@@ -83,6 +83,19 @@ def remove_whitespace(expr: pl.Expr) -> pl.Expr:
     return expr.str.replace_all(r"\s", "")
 
 
+def replace_digits(expr: pl.Expr, value: str, only_blocks: bool = False) -> pl.Expr:
+    if only_blocks:
+        pattern = r"\b\d+\b"
+    else:
+        pattern = r"\d+"
+
+    return expr.str.replace_all(pattern, value)
+
+
+def remove_digits(expr: pl.Expr, only_blocks: bool = False) -> pl.Expr:
+    return replace_digits(expr, "", only_blocks)
+
+
 def coerce_ascii(expr: pl.Expr) -> pl.Expr:
     return expr.str.replace_all("[^\p{Ascii}]", "")
 
