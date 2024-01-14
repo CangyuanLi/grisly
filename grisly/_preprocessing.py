@@ -36,20 +36,21 @@ def move_column(df: pl.DataFrame, idx: int, col: str) -> pl.DataFrame:
 def waterfall_join(
     left: PolarsFrame, right: PolarsFrame, left_on: Iterable[str], right_on=str
 ) -> PolarsFrame:
-    left = left.with_row_count("index")
+    index_col = "adsl;fkj89u-alskdfn_3iifaocxkm,mv"
+    left = left.with_row_count(index_col)
     seen: list[int] = []
     outputs: list[PolarsFrame] = []
     for col in left_on:
-        output = left.filter(~pl.col("index").is_in(seen)).join(
+        output = left.filter(~pl.col(index_col).is_in(seen)).join(
             right, left_on=col, right_on=right_on, how="inner"
         )
 
         seen.extend(
-            output.select("index").lazy().collect().get_column("index").to_list()
+            output.select(index_col).lazy().collect().get_column(index_col).to_list()
         )
         outputs.append(output)
 
-    return pl.concat(outputs).sort("index").drop("index")
+    return pl.concat(outputs).sort(index_col).drop(index_col)
 
 
 def replace_with_null(
