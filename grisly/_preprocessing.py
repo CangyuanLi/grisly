@@ -118,11 +118,15 @@ def map_words(expr: pl.Expr, mapping: dict[str, str]) -> pl.Expr:
     )
 
 
-def remove_chars(expr: pl.Expr, unwanted: Iterable[str]) -> pl.Expr:
+def replace_chars(expr: pl.Expr, unwanted: Iterable[str], value: str) -> pl.Expr:
     for char in unwanted:
-        expr = expr.str.replace_all(char, "", literal=True)
+        expr = expr.str.replace_all(char, value, literal=True)
 
     return expr
+
+
+def remove_chars(expr: pl.Expr, unwanted: Iterable[str]) -> pl.Expr:
+    return replace_chars(expr, unwanted, "")
 
 
 def keep_only(expr: pl.Expr, to_keep: str) -> pl.Expr:
