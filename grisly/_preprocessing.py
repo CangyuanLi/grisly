@@ -156,3 +156,28 @@ def remove_diacritics(expr: pl.Expr) -> pl.Expr:
     return expr._register_plugin(
         lib=LIB, symbol="remove_diacritics", is_elementwise=True
     )
+
+
+def remove_bracketed_content(
+    expr: pl.Expr,
+    open_brackets: str = "([{<",
+    close_brackets: str = ")]}>",
+    any_combination: bool = False,
+) -> pl.Expr:
+    if any_combination:
+        brackets = []
+        for a in open_brackets:
+            for b in close_brackets:
+                brackets.append(a)
+                brackets.append(b)
+        brackets = "".join(brackets)
+    else:
+        brackets = "".join(f"{a}{b}" for a, b in zip(open_brackets, close_brackets))
+
+    return expr._register_plugin(
+        lib=LIB,
+        symbol="removed_bracketed_content",
+        args=[],
+        kwargs={"brackets": brackets},
+        is_elementwise=True,
+    )

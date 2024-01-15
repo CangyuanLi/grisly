@@ -1,3 +1,5 @@
+use std::mem::align_of_val;
+
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
 use unicode_normalization::UnicodeNormalization;
@@ -80,6 +82,47 @@ fn _remove_diacritics(value: &str, output: &mut String) {
 fn remove_diacritics(inputs: &[Series]) -> PolarsResult<Series> {
     let ca = inputs[0].utf8()?;
     let out = ca.apply_to_buffer(_remove_diacritics);
+
+    Ok(out.into_series())
+}
+
+#[derive(serde::Deserialize)]
+struct RemoveBracketedContentKwargs {
+    brackets: String,
+}
+
+fn _remove_bracketed_content(value: &str, brackets: &str, output: &mut String) {
+    let mut count = vec![0; brackets.len() / 2];
+
+    for character in value.chars() {
+        let mut flag = false;
+        for (i, b) in brackets.chars().enumerate() {
+            if character == b {
+                let (kind, is_close) = (i / 2, i % 2);
+                count[kind] = (-1i32).pow(is_close as u32);
+
+                if count[kind] < 0 {
+                    count[kind] = 0
+                } else {
+                    flag = true;
+                    break;
+                }
+            }
+        }
+
+        if flag && !count.iter().any(|x| *x != 0) {
+            output.push(character);
+        }
+    }
+}
+
+#[polars_expr(output_type=Utf8)]
+fn remove_bracketed_content(
+    inputs: &[Series],
+    kwargs: RemoveBracketedContentKwargs,
+) -> PolarsResult<Series> {
+    let ca = inputs[0].utf8()?;
+    let out = ca.apply_to_buffer(|val, buf| _remove_bracketed_content(val, &kwargs.brackets, buf));
 
     Ok(out.into_series())
 }
