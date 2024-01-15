@@ -11,26 +11,35 @@ PolarsFrame = Union[pl.DataFrame, pl.LazyFrame]
 LIB = _get_shared_lib_location(__file__)
 
 
-def move_column(df: pl.DataFrame, idx: int, col: str) -> pl.DataFrame:
-    """Move column to specified index.
+def move_column(df: pl.DataFrame, index: int, column_name: str):
+    """Move column to specified index. This operation is in place.
 
     Parameters
     ----------
     df : pl.DataFrame
-        _description_
-    idx : int
-        _description_
-    col : str
-        _description_
+    index : int
+        Index to move the column to.
+    column_name : str
+        The name of the column to move.
 
-    Returns
-    -------
-    pl.DataFrame
-        _description_
+    Examples
+    --------
+    >>> df = pl.DataFrame({"foo": [1, 2, 3], "bar": [4, 5, 6], "baz": [97, 98, 99]})
+    >>> grisly.move_column(df, 1, "baz")
+    shape: (3, 3)
+    ┌─────┬─────┬─────┐
+    │ foo ┆ baz ┆ bar │
+    │ --- ┆ --- ┆ --- │
+    │ i64 ┆ i64 ┆ i64 │
+    ╞═════╪═════╪═════╡
+    │ 1   ┆ 97  ┆ 4   │
+    │ 2   ┆ 98  ┆ 5   │
+    │ 3   ┆ 99  ┆ 6   │
+    └─────┴─────┴─────┘
     """
-    s = df[col]
-    df = df.drop(col)
-    df.insert_column(idx, s)
+    s = df[column_name]
+    df = df.drop(column_name)
+    df.insert_column(index, s)
 
 
 def waterfall_join(
