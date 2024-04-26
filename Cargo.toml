@@ -1,6 +1,6 @@
 [package]
 name = "grisly"
-version = "0.0.0"
+version = "0.0.4"
 edition = "2021"
 
 [lib]
@@ -10,6 +10,6 @@ crate-type = ["cdylib"]
 [dependencies]
 polars = { version = "*" }
 pyo3 = { version = "*", features = ["extension-module"] }
-pyo3-polars = { version = "*", features = ["derive"] }
+pyo3-polars = { version = "*", features = ["derive", "lazy"] }
 serde = { version = "*", features = ["derive"] }
 unicode-normalization = "0.1.22"

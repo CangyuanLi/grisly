@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from pathlib import Path
 from typing import Literal, Union
 
 import polars as pl
-from polars.utils.udfs import _get_shared_lib_location
+from polars.plugins import register_plugin_function
+from polars.type_aliases import IntoExpr
 
 PolarsFrame = Union[pl.DataFrame, pl.LazyFrame]
 
-LIB = _get_shared_lib_location(__file__)
+PLUGIN_PATH = Path(__file__).resolve().parents[0]
 
 
 def move_column(df: pl.DataFrame, index: int, column_name: str):
@@ -109,36 +111,37 @@ def coerce_ascii(expr: pl.Expr) -> pl.Expr:
     return expr.str.replace_all("[^\p{Ascii}]", "")
 
 
-def unique_words(expr: pl.Expr) -> pl.Expr:
-    return expr._register_plugin(
-        lib=LIB,
-        symbol="unique_words",
+def unique_words(expr: IntoExpr) -> pl.Expr:
+    return register_plugin_function(
+        plugin_path=PLUGIN_PATH,
+        function_name="unique_words",
+        args=expr,
         is_elementwise=True,
     )
 
 
-def map_words(expr: pl.Expr, mapping: dict[str, str]) -> pl.Expr:
-    return expr._register_plugin(
-        lib=LIB,
-        args=[],
+def map_words(expr: IntoExpr, mapping: dict[str, str]) -> pl.Expr:
+    return register_plugin_function(
+        plugin_path=PLUGIN_PATH,
+        function_name="map_words",
+        args=expr,
         kwargs={"mapping": mapping},
-        symbol="map_words",
         is_elementwise=True,
     )
 
 
-def replace_chars(expr: pl.Expr, unwanted: Iterable[str], value: str) -> pl.Expr:
+def replace_chars(expr: IntoExpr, unwanted: Iterable[str], value: str) -> pl.Expr:
     for char in unwanted:
         expr = expr.str.replace_all(char, value, literal=True)
 
     return expr
 
 
-def remove_chars(expr: pl.Expr, unwanted: Iterable[str]) -> pl.Expr:
+def remove_chars(expr: IntoExpr, unwanted: Iterable[str]) -> pl.Expr:
     return replace_chars(expr, unwanted, "")
 
 
-def keep_only(expr: pl.Expr, to_keep: str) -> pl.Expr:
+def keep_only(expr: IntoExpr, to_keep: str) -> pl.Expr:
     return expr.str.replace_all(f"[^{to_keep}]", "")
 
 
@@ -151,19 +154,22 @@ def remove_generational_suffixes(expr: pl.Expr) -> pl.Expr:
     )
 
 
-def normalize(expr: pl.Expr, form: Literal["NFC", "NKFC", "NFD", "NKFD"]) -> pl.Expr:
-    return expr._register_plugin(
-        lib=LIB,
-        args=[],
+def normalize(expr: IntoExpr, form: Literal["NFC", "NKFC", "NFD", "NKFD"]) -> pl.Expr:
+    return register_plugin_function(
+        plugin_path=PLUGIN_PATH,
+        function_name="normalize",
+        args=expr,
         kwargs={"form": form},
-        symbol="normalize",
         is_elementwise=True,
     )
 
 
-def remove_diacritics(expr: pl.Expr) -> pl.Expr:
-    return expr._register_plugin(
-        lib=LIB, symbol="remove_diacritics", is_elementwise=True
+def remove_diacritics(expr: IntoExpr) -> pl.Expr:
+    return register_plugin_function(
+        plugin_path=PLUGIN_PATH,
+        function_name="remove_diacritics",
+        args=expr,
+        is_elementwise=True,
     )
 
 
@@ -183,10 +189,10 @@ def remove_bracketed_content(
     else:
         brackets = "".join(f"{a}{b}" for a, b in zip(open_brackets, close_brackets))
 
-    return expr._register_plugin(
-        lib=LIB,
-        symbol="removed_bracketed_content",
-        args=[],
+    return register_plugin_function(
+        plugin_path=PLUGIN_PATH,
+        function_name="removed_bracketed_content",
+        args=expr,
         kwargs={"brackets": brackets},
         is_elementwise=True,
     )

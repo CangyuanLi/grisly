@@ -1,5 +1,3 @@
-use std::mem::align_of_val;
-
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
 use unicode_normalization::UnicodeNormalization;
@@ -12,9 +10,9 @@ fn _unique_words(value: &str, output: &mut String) {
     output.push_str(items.join(" ").as_str());
 }
 
-#[polars_expr(output_type=Utf8)]
+#[polars_expr(output_type=String)]
 fn unique_words(inputs: &[Series]) -> PolarsResult<Series> {
-    let ca = inputs[0].utf8()?;
+    let ca = inputs[0].str()?;
     let out = ca.apply_to_buffer(_unique_words);
 
     Ok(out.into_series())
@@ -41,9 +39,9 @@ fn _map_words(
     output.push_str(vec.join(" ").as_str())
 }
 
-#[polars_expr(output_type=Utf8)]
+#[polars_expr(output_type=String)]
 fn map_words(inputs: &[Series], kwargs: MapWordsKwargs) -> PolarsResult<Series> {
-    let ca = inputs[0].utf8()?;
+    let ca = inputs[0].str()?;
     let out = ca.apply_to_buffer(|val, buf| _map_words(val, &kwargs.mapping, buf));
 
     Ok(out.into_series())
@@ -66,9 +64,9 @@ fn _normalize(value: &str, form: &str, output: &mut String) {
     }
 }
 
-#[polars_expr(output_type=Utf8)]
+#[polars_expr(output_type=String)]
 fn normalize(inputs: &[Series], kwargs: NormalizeKwargs) -> PolarsResult<Series> {
-    let ca = inputs[0].utf8()?;
+    let ca = inputs[0].str()?;
     let out = ca.apply_to_buffer(|val, buf| _normalize(val, &kwargs.form, buf));
 
     Ok(out.into_series())
@@ -78,9 +76,9 @@ fn _remove_diacritics(value: &str, output: &mut String) {
     *output = value.nfd().filter(char::is_ascii).collect()
 }
 
-#[polars_expr(output_type=Utf8)]
+#[polars_expr(output_type=String)]
 fn remove_diacritics(inputs: &[Series]) -> PolarsResult<Series> {
-    let ca = inputs[0].utf8()?;
+    let ca = inputs[0].str()?;
     let out = ca.apply_to_buffer(_remove_diacritics);
 
     Ok(out.into_series())
@@ -116,12 +114,12 @@ fn _remove_bracketed_content(value: &str, brackets: &str, output: &mut String) {
     }
 }
 
-#[polars_expr(output_type=Utf8)]
+#[polars_expr(output_type=String)]
 fn remove_bracketed_content(
     inputs: &[Series],
     kwargs: RemoveBracketedContentKwargs,
 ) -> PolarsResult<Series> {
-    let ca = inputs[0].utf8()?;
+    let ca = inputs[0].str()?;
     let out = ca.apply_to_buffer(|val, buf| _remove_bracketed_content(val, &kwargs.brackets, buf));
 
     Ok(out.into_series())
