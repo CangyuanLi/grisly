@@ -86,15 +86,13 @@ def normalize_whitespace(expr: pl.Expr) -> pl.Expr:
     return expr.str.replace_all(" +", " ")
 
 
-def replace_whitespace(expr: pl.Expr, value: str) -> pl.Expr:
+def replace_whitespace(expr: IntoExpr, value: str = "") -> pl.Expr:
     return expr.str.replace_all(r"\s", value)
 
 
-def remove_whitespace(expr: pl.Expr) -> pl.Expr:
-    return expr.str.replace_all(r"\s", "")
-
-
-def replace_digits(expr: pl.Expr, value: str, only_blocks: bool = False) -> pl.Expr:
+def replace_digits(
+    expr: IntoExpr, value: str = "", only_blocks: bool = False
+) -> pl.Expr:
     if only_blocks:
         pattern = r"\b\d+\b"
     else:
@@ -103,12 +101,8 @@ def replace_digits(expr: pl.Expr, value: str, only_blocks: bool = False) -> pl.E
     return expr.str.replace_all(pattern, value)
 
 
-def remove_digits(expr: pl.Expr, only_blocks: bool = False) -> pl.Expr:
-    return replace_digits(expr, "", only_blocks)
-
-
-def coerce_ascii(expr: pl.Expr) -> pl.Expr:
-    return expr.str.replace_all("[^\p{Ascii}]", "")
+def replace_non_ascii(expr: pl.Expr, value: str = "") -> pl.Expr:
+    return expr.str.replace_all("[^\p{Ascii}]", value)
 
 
 def unique_words(expr: IntoExpr) -> pl.Expr:
@@ -130,22 +124,18 @@ def map_words(expr: IntoExpr, mapping: dict[str, str]) -> pl.Expr:
     )
 
 
-def replace_chars(expr: IntoExpr, unwanted: Iterable[str], value: str) -> pl.Expr:
+def replace_chars(expr: IntoExpr, unwanted: Iterable[str], value: str = "") -> pl.Expr:
     for char in unwanted:
         expr = expr.str.replace_all(char, value, literal=True)
 
     return expr
 
 
-def remove_chars(expr: IntoExpr, unwanted: Iterable[str]) -> pl.Expr:
-    return replace_chars(expr, unwanted, "")
+def replace_all_except(expr: IntoExpr, to_keep: str, value: str = "") -> pl.Expr:
+    return expr.str.replace_all(f"[^{to_keep}]", value)
 
 
-def keep_only(expr: IntoExpr, to_keep: str) -> pl.Expr:
-    return expr.str.replace_all(f"[^{to_keep}]", "")
-
-
-def remove_generational_suffixes(expr: pl.Expr) -> pl.Expr:
+def remove_generational_suffixes(expr: IntoExpr) -> pl.Expr:
     return (
         expr.str.replace_all(r"(?i)\s?J\.*?R\.*\s*?$", "")
         .str.replace_all(r"(?i)\s?S\.*?R\.*\s*?$", "")
