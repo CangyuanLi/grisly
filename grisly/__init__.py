@@ -1,10 +1,5 @@
 # ruff: noqa: E402,F401,F403
 
-from collections.abc import Iterable
-from typing import Literal, Union
-
-import polars as pl
-
 from ._preprocessing import (
     map_words,
     move_column,
